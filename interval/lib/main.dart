@@ -18,13 +18,19 @@ class _AppState extends State<App> {
 
   var min = 0;
   var sec = 10;
+  var playIcon = Icons.play_circle;
+
+
+
   bool runState = false;
   void startRun(){
     setState(() {
       if(runState){
         runState = false;
+        playIcon = Icons.play_circle;
       }else{
         runState = true;
+        playIcon = Icons.pause_circle;
       }
     });
 
@@ -46,6 +52,13 @@ class _AppState extends State<App> {
         });
       });
 
+  }
+
+  void resetTimer(){
+    setState(() {
+      min = 0;
+      sec = 10;
+    });
   }
 
   @override
@@ -93,16 +106,26 @@ class _AppState extends State<App> {
                         child: Center(
                           child: Column(
                             children: [
-                              Text("${runState}", style: TextStyle(fontSize: 30),),
+                              //Text("${runState}", style: TextStyle(fontSize: 30),),
                               Text("${min.toString().padLeft(2, '0')}:${sec.toString().padLeft(2, '0')}",
                               style: TextStyle(
                                 fontSize: 105
                               ),),
-                              IconButton(
-                                  onPressed: startRun,
-                                  icon: Icon(Icons.play_circle),
-                                  iconSize: 80,
-                              )
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  IconButton(
+                                          onPressed: startRun,
+                                          icon: Icon(playIcon),
+                                          iconSize: 80,
+                                      ),
+                                  IconButton(
+                                    onPressed: resetTimer,
+                                    icon: Icon(Icons.replay),
+                                    iconSize: 80,
+                                  )
+                                ],
+                              ),
                             ],
                           ),
                         ),
