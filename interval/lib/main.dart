@@ -17,24 +17,56 @@ class App extends StatefulWidget {
 class _AppState extends State<App> {
 
   var min = 0;
-  var sec = 10;
+  var sec = 0;
   var playIcon = Icons.play_circle;
-
-
+  final stopwatch = Stopwatch();
 
   bool runState = false;
+
+  Map convertTime(int timeInMilliseconds) {
+    Duration timeDuration = Duration(milliseconds: timeInMilliseconds);
+    int centiseconds = timeDuration.inMilliseconds ~/ 10;
+    int seconds = timeDuration.inSeconds;
+    int minutes = timeDuration.inMinutes;
+    int hours = timeDuration.inHours;
+    Map result = {};
+    result['seconds'] = seconds;
+    result['minutes'] = minutes;
+    return result;
+  }
+
+  void runStopwatch(){
+    print(stopwatch.elapsedMilliseconds); // 0
+    print(stopwatch.isRunning); // false
+    stopwatch.start();
+    print(stopwatch.isRunning); // true
+    setState(() {
+      while(true){
+        min = convertTime(stopwatch.elapsedMicroseconds)['minutes'];
+        sec = convertTime(stopwatch.elapsedMicroseconds)['seconds'];
+      }
+    });
+  }
+
+
+
   void startRun(){
     setState(() {
       if(runState){
+        stopwatch.stop();
         runState = false;
         playIcon = Icons.play_circle;
       }else{
+        stopwatch.start();
         runState = true;
         playIcon = Icons.pause_circle;
       }
+
+      min = convertTime(stopwatch.elapsedMicroseconds)['minutes'];
+      sec = convertTime(stopwatch.elapsedMicroseconds)['seconds'];
     });
 
-    const duration = Duration(seconds: 1);
+    /*const duration = Duration(seconds: 1);
     Timer? timer;
     timer = Timer.periodic(duration, (Timer t) {
         setState(() {
@@ -50,7 +82,7 @@ class _AppState extends State<App> {
             timer?.cancel();
           }
         });
-      });
+      });*/
 
   }
 
