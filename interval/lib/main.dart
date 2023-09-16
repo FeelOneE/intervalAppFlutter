@@ -17,12 +17,17 @@ class App extends StatefulWidget {
 class _AppState extends State<App> {
 
   // 초기 타이머 세팅
-  var initMilliSec = 2*1000;
+  var initMilliSec = 2131*1000;
   var runMilliSec = 0;
 
   // 출력할 분, 초 변수
   var min = 0;
   var sec = 0;
+
+  var timeSetList = [];
+  var timeSet_1 = {'state': 'ready', 'time': 500*1000};
+  var timeSet_2 = {'state': 'run', 'time': 5*1000};
+  var timeSet_3 = {'state': 'rest', 'time': 2*1000};
 
   var playIcon = Icons.play_circle;
   var stopwatch = Stopwatch();
@@ -40,7 +45,14 @@ class _AppState extends State<App> {
       sec = (cvtSec % 60).toInt();
     });
   }
-  
+
+  String convertMillTime(var millsec){
+    var cvtSec = (millsec / 1000).ceilToDouble();
+    var min = cvtSec ~/ 60;
+    var sec = (cvtSec % 60).toInt();
+
+    return "${min.toString().padLeft(2, '0')}:${sec.toString().padLeft(2, '0')}";
+  }
   // 타이머 시작
   var duration = const Duration(seconds: 1);
   Timer? runTimer;
@@ -111,10 +123,11 @@ class _AppState extends State<App> {
       ),
       home: Scaffold(
         appBar: AppBar(
-          title: Text('Interval Traing',
-          style: TextStyle(
-              color: Colors.black
-          ),),
+          title: Text(
+            'Interval Traing',
+            style: TextStyle(
+                color: Colors.black
+            ),),
           //backgroundColor: Color(0xFFE9EBEC),
         ),
         body: Column(
@@ -131,7 +144,7 @@ class _AppState extends State<App> {
                         child: Center(
                           child: Column(
                             children: [
-                              Text("${runState}", style: TextStyle(fontSize: 30),),
+                              //Text("${runState}", style: TextStyle(fontSize: 30),),
                               Text("${min.toString().padLeft(2, '0')}:"
                                   "${sec.toString().padLeft(2, '0')}",
                               style: TextStyle(
@@ -163,10 +176,19 @@ class _AppState extends State<App> {
                         ),
                       ),
                     ),
-                    Container(
-                      height: 200,
-                      color: Colors.orange,
-                    )
+                    Expanded(
+                      child: Container(
+                        //height: 200,
+                        //color: Colors.orange,
+                        child: Column(
+                          children: [
+                            Text(convertMillTime(timeSet_1['time']), style: TextStyle(fontSize: 30),),
+                            Text(convertMillTime(timeSet_2['time']), style: TextStyle(fontSize: 30),),
+                            Text(convertMillTime(timeSet_3['time']), style: TextStyle(fontSize: 30),),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 )
             ),
