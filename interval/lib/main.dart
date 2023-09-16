@@ -16,85 +16,78 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> {
 
+  // 초기 타이머 세팅
+  var initMilliSec = 2*1000;
+  var runMilliSec = 0;
+
+  // 출력할 분, 초 변수
   var min = 0;
   var sec = 0;
+
   var playIcon = Icons.play_circle;
-  final stopwatch = Stopwatch();
+  var stopwatch = Stopwatch();
 
-  bool runState = false;
-
-  Map convertTime(int timeInMilliseconds) {
-    Duration timeDuration = Duration(milliseconds: timeInMilliseconds);
-    int centiseconds = timeDuration.inMilliseconds ~/ 10;
-    int seconds = timeDuration.inSeconds;
-    int minutes = timeDuration.inMinutes;
-    int hours = timeDuration.inHours;
-    Map result = {};
-    result['seconds'] = seconds;
-    result['minutes'] = minutes;
-    return result;
+  // 밀리초 분,초 변환
+  void convertMilltoMinAndSec(){
+    var cvtSec = 0.0;
+    if (runMilliSec == 0){
+      cvtSec = initMilliSec / 1000;
+    }else{
+      cvtSec = (runMilliSec / 1000).ceilToDouble();
+    }
+    setState(() {
+      min = cvtSec ~/ 60;
+      sec = (cvtSec % 60).toInt();
+    });
   }
+  
+  // 타이머 시작
+  var duration = const Duration(seconds: 1);
+  Timer? runTimer;
+  // 타이머 실행 상태
+  String runState = "init";
 
   void runStopwatch(){
-    print(stopwatch.elapsedMilliseconds); // 0
-    print(stopwatch.isRunning); // false
-    stopwatch.start();
-    print(stopwatch.isRunning); // true
+    runState = "run";
+    if(stopwatch.isRunning){ // 타이머 실행중 -> 일시정지
+      stopwatch.stop();
+      playIcon = Icons.play_circle;
+    }else{ // 타이머 일시정지 중 -> 다시 실행
+      stopwatch.start();
+      playIcon = Icons.pause_circle;
+    }
     setState(() {
-      while(true){
-        min = convertTime(stopwatch.elapsedMicroseconds)['minutes'];
-        sec = convertTime(stopwatch.elapsedMicroseconds)['seconds'];
-      }
+      runTimer= Timer.periodic(duration, (Timer t) {
+        runMilliSec = initMilliSec - stopwatch.elapsedMilliseconds;
+        convertMilltoMinAndSec();
+        // 시간 만료
+        if(runMilliSec <= 0){
+          runTimer!.cancel();
+          stopwatch = Stopwatch();
+          runState = "finish";
+        }
+      });
     });
   }
 
-
-
-  void startRun(){
-    setState(() {
-      if(runState){
-        stopwatch.stop();
-        runState = false;
-        playIcon = Icons.play_circle;
-      }else{
-        stopwatch.start();
-        runState = true;
-        playIcon = Icons.pause_circle;
-      }
-
-      min = convertTime(stopwatch.elapsedMicroseconds)['minutes'];
-      sec = convertTime(stopwatch.elapsedMicroseconds)['seconds'];
-    });
-
-    /*const duration = Duration(seconds: 1);
-    Timer? timer;
-    timer = Timer.periodic(duration, (Timer t) {
-        setState(() {
-          if (!runState) {
-            timer?.cancel();
-          }else if(min > 0 || sec > 0) {
-            if (sec == 0) {
-              sec = 60;
-              min = min - 1;
-            }
-            sec = sec - 1;
-          }else{
-            timer?.cancel();
-          }
-        });
-      });*/
-
-  }
-
+  // 리셋 버튼
   void resetTimer(){
     setState(() {
-      min = 0;
-      sec = 10;
+      if (runTimer != null) {
+        runTimer!.cancel();
+      }
+      playIcon = Icons.play_circle;
+      stopwatch = Stopwatch();
+      runMilliSec = 0;
+      convertMilltoMinAndSec();
+      runState = "init";
     });
   }
-
+  
+  
   @override
   Widget build(BuildContext context) {
+    convertMilltoMinAndSec();// 시작시 초기 시간 세팅
     return MaterialApp(
       theme: ThemeData(
         useMaterial3: true,
@@ -138,19 +131,26 @@ class _AppState extends State<App> {
                         child: Center(
                           child: Column(
                             children: [
-                              //Text("${runState}", style: TextStyle(fontSize: 30),),
-                              Text("${min.toString().padLeft(2, '0')}:${sec.toString().padLeft(2, '0')}",
+                              Text("${runState}", style: TextStyle(fontSize: 30),),
+                              Text("${min.toString().padLeft(2, '0')}:"
+                                  "${sec.toString().padLeft(2, '0')}",
                               style: TextStyle(
                                 fontSize: 105
                               ),),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
+                                  (runState == "finish") ?
                                   IconButton(
-                                          onPressed: startRun,
+                                  onPressed: resetTimer,
+                                    icon: Icon(Icons.stop_circle),
+                                    iconSize: 80,
+                                  )
+                                  :IconButton(
+                                          onPressed: runStopwatch,
                                           icon: Icon(playIcon),
                                           iconSize: 80,
-                                      ),
+                                  ),
                                   IconButton(
                                     onPressed: resetTimer,
                                     icon: Icon(Icons.replay),
