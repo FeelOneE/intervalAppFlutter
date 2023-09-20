@@ -17,23 +17,23 @@ class App extends StatefulWidget {
 class _AppState extends State<App> {
 
   // 초기 타이머 세팅
-  var initMilliSec = 2131*1000;
-  var runMilliSec = 0;
+  int initMilliSec = 2131*1000;
+  int runMilliSec = 0;
 
   // 출력할 분, 초 변수
-  var min = 0;
-  var sec = 0;
+  int min = 0;
+  int sec = 0;
 
-  var timeSetList = [];
-  var timeSet_1 = {'state': 'ready', 'time': 500*1000};
-  var timeSet_2 = {'state': 'run', 'time': 5*1000};
-  var timeSet_3 = {'state': 'rest', 'time': 2*1000};
+  List<Map<String, Object>> timeSetList = [];
+  Map<String, Object> timeSet_1 = {'state': 'ready', 'time': 500*1000};
+  Map<String, Object> timeSet_2 = {'state': 'run', 'time': 5*1000};
+  Map<String, Object> timeSet_3 = {'state': 'rest', 'time': 2*1000};
 
-  var playIcon = Icons.play_circle;
-  var stopwatch = Stopwatch();
+  IconData playIcon = Icons.play_circle;
+  Stopwatch stopwatch = Stopwatch();
 
   // 밀리초 분,초 변환
-  void convertMilltoMinAndSec(){
+  void convertMillToMinAndSec(){
     var cvtSec = 0.0;
     if (runMilliSec == 0){
       cvtSec = initMilliSec / 1000;
@@ -53,11 +53,11 @@ class _AppState extends State<App> {
 
     return "${min.toString().padLeft(2, '0')}:${sec.toString().padLeft(2, '0')}";
   }
+  
   // 타이머 시작
-  var duration = const Duration(seconds: 1);
+  Duration duration = const Duration(seconds: 1);
   Timer? runTimer;
-  // 타이머 실행 상태
-  String runState = "init";
+  String runState = "init"; // 타이머 실행 상태
 
   void runStopwatch(){
     runState = "run";
@@ -71,7 +71,7 @@ class _AppState extends State<App> {
     setState(() {
       runTimer= Timer.periodic(duration, (Timer t) {
         runMilliSec = initMilliSec - stopwatch.elapsedMilliseconds;
-        convertMilltoMinAndSec();
+        convertMillToMinAndSec();
         // 시간 만료
         if(runMilliSec <= 0){
           runTimer!.cancel();
@@ -91,7 +91,7 @@ class _AppState extends State<App> {
       playIcon = Icons.play_circle;
       stopwatch = Stopwatch();
       runMilliSec = 0;
-      convertMilltoMinAndSec();
+      convertMillToMinAndSec();
       runState = "init";
     });
   }
@@ -99,7 +99,7 @@ class _AppState extends State<App> {
   
   @override
   Widget build(BuildContext context) {
-    convertMilltoMinAndSec();// 시작시 초기 시간 세팅
+    convertMillToMinAndSec();// 시작시 초기 시간 세팅
     return MaterialApp(
       theme: ThemeData(
         useMaterial3: true,
