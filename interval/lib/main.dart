@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:interval/entity/IntervalType.dart';
+import 'package:interval/entity/TimerInfo.dart';
 import 'dart:async';
+
+import 'package:interval/entity/TimerInfoDetail.dart';
 
 
 void main(){
@@ -17,26 +21,21 @@ class App extends StatefulWidget {
 class _AppState extends State<App> {
 
   // 초기 타이머 세팅
-  int initMilliSec = 2131*1000;
+  int initMilliSec = 0;
   int runMilliSec = 0;
 
   // 출력할 분, 초 변수
   int min = 0;
   int sec = 0;
 
-  List<Map<String, Object>> timeSetList = [];
-  Map<String, Object> timeSet_1 = {'state': 'ready', 'time': 500*1000};
-  Map<String, Object> timeSet_2 = {'state': 'run', 'time': 5*1000};
-  Map<String, Object> timeSet_3 = {'state': 'rest', 'time': 2*1000};
-
   IconData playIcon = Icons.play_circle;
   Stopwatch stopwatch = Stopwatch();
 
-  // 밀리초 분,초 변환
-  void convertMillToMinAndSec(){
+  // 밀리초 분,초 변환 setMainTimerInfo
+  void setMainTimerInfo(TimerInfo timerInfo){
     var cvtSec = 0.0;
     if (runMilliSec == 0){
-      cvtSec = initMilliSec / 1000;
+      cvtSec = timerInfo.totalTime / 1000;
     }else{
       cvtSec = (runMilliSec / 1000).ceilToDouble();
     }
@@ -46,7 +45,8 @@ class _AppState extends State<App> {
     });
   }
 
-  String convertMillTime(var millsec){
+  // 밀리초 {min:sec} 형태로 출력 convertMillToMinAndSec
+  String convertMillToMinAndSec(var millsec){
     var cvtSec = (millsec / 1000).ceilToDouble();
     var min = cvtSec ~/ 60;
     var sec = (cvtSec % 60).toInt();
@@ -59,7 +59,7 @@ class _AppState extends State<App> {
   Timer? runTimer;
   String runState = "init"; // 타이머 실행 상태
 
-  void runStopwatch(){
+  void runStopwatch(TimerInfo timerInfo){
     runState = "run";
     if(stopwatch.isRunning){ // 타이머 실행중 -> 일시정지
       stopwatch.stop();
@@ -70,8 +70,8 @@ class _AppState extends State<App> {
     }
     setState(() {
       runTimer= Timer.periodic(duration, (Timer t) {
-        runMilliSec = initMilliSec - stopwatch.elapsedMilliseconds;
-        convertMillToMinAndSec();
+        runMilliSec = timerInfo.totalTime - stopwatch.elapsedMilliseconds;
+        setMainTimerInfo(timerInfo);
         // 시간 만료
         if(runMilliSec <= 0){
           runTimer!.cancel();
@@ -83,7 +83,7 @@ class _AppState extends State<App> {
   }
 
   // 리셋 버튼
-  void resetTimer(){
+  void resetTimer(TimerInfo timerInfo){
     setState(() {
       if (runTimer != null) {
         runTimer!.cancel();
@@ -91,7 +91,7 @@ class _AppState extends State<App> {
       playIcon = Icons.play_circle;
       stopwatch = Stopwatch();
       runMilliSec = 0;
-      convertMillToMinAndSec();
+      setMainTimerInfo(timerInfo);
       runState = "init";
     });
   }
@@ -99,7 +99,32 @@ class _AppState extends State<App> {
   
   @override
   Widget build(BuildContext context) {
-    convertMillToMinAndSec();// 시작시 초기 시간 세팅
+
+    List<TimerInfoDetail> timerInfoDetailList = [];
+    TimerInfoDetail info1 = TimerInfoDetail(
+        costTime: 5*1000,
+        type: IntervalType.prepare
+    );
+    TimerInfoDetail info2 = TimerInfoDetail(
+        costTime: 3*1000,
+        type: IntervalType.run
+    );
+    TimerInfoDetail info3 = TimerInfoDetail(
+        costTime: 6*1000,
+        type: IntervalType.rest
+    );
+    timerInfoDetailList.add(info1);
+    timerInfoDetailList.add(info2);
+    timerInfoDetailList.add(info3);
+    TimerInfo timerInfo = TimerInfo(
+        isDefault: true,
+        timerList: timerInfoDetailList,
+        totalTime: 0 // 총 시간 초기화
+    );
+    timerInfo.calcTotalTime(); // 총 시간 계산
+
+    setMainTimerInfo(timerInfo);// 시작시 초기 시간 세팅
+
     return MaterialApp(
       theme: ThemeData(
         useMaterial3: true,
@@ -144,54 +169,59 @@ class _AppState extends State<App> {
                         child: Center(
                           child: Column(
                             children: [
-                              //Text("${runState}", style: TextStyle(fontSize: 30),),
+                              Text("${runState}", style: TextStyle(fontSize: 30),),
                               Text("${min.toString().padLeft(2, '0')}:"
                                   "${sec.toString().padLeft(2, '0')}",
                               style: TextStyle(
                                 fontSize: 105
-                              ),),
+                                ),
+                              ),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   (runState == "finish") ?
-                                  IconButton(
-                                  onPressed: resetTimer,
+                                  IconButton( // 종료 아이콘
+                                    onPressed: () {
+                                      resetTimer(timerInfo);
+                                    },
                                     icon: Icon(Icons.stop_circle),
                                     iconSize: 80,
-                                  )
-                                  :IconButton(
-                                          onPressed: runStopwatch,
-                                          icon: Icon(playIcon),
-                                          iconSize: 80,
-                                  ),
-                                  IconButton(
-                                    onPressed: resetTimer,
+                                    )
+                                  :IconButton( // 시작 아이콘
+                                    onPressed: () {
+                                      runStopwatch(timerInfo);
+                                    },
+                                    icon: Icon(playIcon),
+                                    iconSize: 80,
+                                    ),
+                                  IconButton( // 리셋 버튼
+                                    onPressed: () {
+                                      resetTimer(timerInfo);
+                                    },
                                     icon: Icon(Icons.replay),
                                     iconSize: 80,
-                                  )
-                                ],
+                                    )
+                                  ]),
+                                ]),
                               ),
-                            ],
+                            ),
                           ),
-                        ),
-                      ),
-                    ),
                     Expanded(
-                      child: Container(
-                        //height: 200,
-                        //color: Colors.orange,
-                        child: Column(
-                          children: [
-                            Text(convertMillTime(timeSet_1['time']), style: TextStyle(fontSize: 30),),
-                            Text(convertMillTime(timeSet_2['time']), style: TextStyle(fontSize: 30),),
-                            Text(convertMillTime(timeSet_3['time']), style: TextStyle(fontSize: 30),),
-                          ],
-                        ),
-                      ),
+                    child: Container(
+                    //height: 200,
+                    //color: Colors.orange,
+                    child: Column(
+                    children: [
+                    for (TimerInfoDetail info in timerInfo.timerList) ...[
+                      Text(convertMillToMinAndSec(info.costTime)
+                            ,style: TextStyle(fontSize: 30)
+                          ),
+                        ],
+                      ]),
                     ),
-                  ],
-                )
-            ),
+                  ),
+                ])
+              ),
             Expanded(
                 child: Container(
                   color: Colors.blueAccent
