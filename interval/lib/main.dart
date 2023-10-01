@@ -113,9 +113,24 @@ class _AppState extends State<App> {
         costTime: 6*1000,
         type: IntervalType.rest
     );
+    TimerInfoDetail info4 = TimerInfoDetail(
+        costTime: 6*1000,
+        type: IntervalType.rest
+    );
+    TimerInfoDetail info5 = TimerInfoDetail(
+        costTime: 6*1000,
+        type: IntervalType.rest
+    );
+    TimerInfoDetail info6 = TimerInfoDetail(
+        costTime: 6*1000,
+        type: IntervalType.rest
+    );
     timerInfoDetailList.add(info1);
     timerInfoDetailList.add(info2);
     timerInfoDetailList.add(info3);
+    timerInfoDetailList.add(info4);
+    timerInfoDetailList.add(info5);
+    timerInfoDetailList.add(info6);
     TimerInfo timerInfo = TimerInfo(
         isDefault: true,
         timerList: timerInfoDetailList,
@@ -155,79 +170,135 @@ class _AppState extends State<App> {
             ),),
           //backgroundColor: Color(0xFFE9EBEC),
         ),
-        body: Column(
-          children: [
-            Container(
-                height: 550,
-                child: Column(
-                  children: [
-                    Container(
-                      height: 350,
-                      //color: Colors.redAccent,
-                      child: Padding(
-                        padding: EdgeInsets.all(30),
-                        child: Center(
-                          child: Column(
-                            children: [
-                              Text("${runState}", style: TextStyle(fontSize: 30),),
-                              Text("${min.toString().padLeft(2, '0')}:"
-                                  "${sec.toString().padLeft(2, '0')}",
-                              style: TextStyle(
-                                fontSize: 105
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              Container(
+                  child: Column(
+                    children: [
+                      Container(
+                        height: 350,
+                        //color: Colors.redAccent,
+                        child: Padding(
+                          padding: EdgeInsets.all(20),
+                          child: Center(
+                            child: Column(
+                              children: [
+                                Container(
+                                  height: 50,
+                                  child: ListView(
+                                    scrollDirection: Axis.horizontal,
+                                    children: [
+                                      SizedBox(
+                                        width: 80,
+                                      ),
+                                      SizedBox(
+                                        width: 200,
+                                        height: 50,
+                                        child: Container(
+                                            decoration: BoxDecoration(
+                                                borderRadius: BorderRadius.circular(10),
+                                                color: Colors.white
+                                            ),
+                                            child: Center(
+                                              child: Text("인터벌 제목 1"
+                                                  ,style: TextStyle(fontSize: 30)
+                                              ),
+                                            )
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: 10,
+                                      ),
+                                      SizedBox(
+                                        width: 200,
+                                        height: 50,
+                                        child: Container(
+                                            decoration: BoxDecoration(
+                                                borderRadius: BorderRadius.circular(10),
+                                                color: Colors.white
+                                            ),
+                                            child: Center(
+                                              child: Text("인터벌 제목 2"
+                                                  ,style: TextStyle(fontSize: 30)
+                                              ),
+                                            )
+                                        ),
+                                      ),
+                              ]
+                            ),
+                                ),
+                                //Text("${runState}", style: TextStyle(fontSize: 30),),
+                                Text("${min.toString().padLeft(2, '0')}:"
+                                    "${sec.toString().padLeft(2, '0')}",
+                                style: TextStyle(
+                                  fontSize: 105
+                                  ),
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    (runState == "finish") ?
+                                    IconButton( // 종료 아이콘
+                                      onPressed: () {
+                                        resetTimer(timerInfo);
+                                      },
+                                      icon: Icon(Icons.stop_circle),
+                                      iconSize: 80,
+                                      )
+                                    :IconButton( // 시작 아이콘
+                                      onPressed: () {
+                                        runStopwatch(timerInfo);
+                                      },
+                                      icon: Icon(playIcon),
+                                      iconSize: 80,
+                                      ),
+                                    IconButton( // 리셋 버튼
+                                      onPressed: () {
+                                        resetTimer(timerInfo);
+                                      },
+                                      icon: Icon(Icons.replay),
+                                      iconSize: 80,
+                                      )
+                                    ]),
+                                  ]),
                                 ),
                               ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  (runState == "finish") ?
-                                  IconButton( // 종료 아이콘
-                                    onPressed: () {
-                                      resetTimer(timerInfo);
-                                    },
-                                    icon: Icon(Icons.stop_circle),
-                                    iconSize: 80,
-                                    )
-                                  :IconButton( // 시작 아이콘
-                                    onPressed: () {
-                                      runStopwatch(timerInfo);
-                                    },
-                                    icon: Icon(playIcon),
-                                    iconSize: 80,
-                                    ),
-                                  IconButton( // 리셋 버튼
-                                    onPressed: () {
-                                      resetTimer(timerInfo);
-                                    },
-                                    icon: Icon(Icons.replay),
-                                    iconSize: 80,
-                                    )
-                                  ]),
-                                ]),
+                            ),
+                      Container(
+                      child: Column(
+                      children: [
+                      for (TimerInfoDetail info in timerInfo.timerList) ...[
+                        SizedBox(
+                          width: 300,
+                          height: 50,
+                          child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                color: Colors.white
+                              ),
+                            child: Center(
+                              child: Text(convertMillToMinAndSec(info.costTime)
+                                ,style: TextStyle(fontSize: 30)
+                                  ),
+                            )
                               ),
                             ),
-                          ),
-                    Expanded(
-                    child: Container(
-                    //height: 200,
-                    //color: Colors.orange,
-                    child: Column(
-                    children: [
-                    for (TimerInfoDetail info in timerInfo.timerList) ...[
-                      Text(convertMillToMinAndSec(info.costTime)
-                            ,style: TextStyle(fontSize: 30)
-                          ),
-                        ],
-                      ]),
+                            SizedBox(
+                              height: 30,
+                            )
+                          ],
+                        ]),
                     ),
-                  ),
-                ])
-              ),
-            Expanded(
-                child: Container(
-                  color: Colors.blueAccent
-              )
-            )
-          ],
+                  ])
+                ),
+              /*Container(
+                  child: Container(
+                    color: Colors.blueAccent
+                )
+              )*/
+            ],
+          ),
         ),
       ),
     );
