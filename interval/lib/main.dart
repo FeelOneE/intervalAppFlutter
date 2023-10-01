@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:interval/entity/IntervalType.dart';
@@ -197,8 +199,8 @@ class _AppState extends State<App> {
                                         height: 50,
                                         child: Container(
                                             decoration: BoxDecoration(
-                                                borderRadius: BorderRadius.circular(10),
-                                                color: Colors.white
+                                                borderRadius: BorderRadius.circular(30),
+                                                color: Colors.grey
                                             ),
                                             child: Center(
                                               child: Text("인터벌 제목 1"
@@ -208,7 +210,7 @@ class _AppState extends State<App> {
                                         ),
                                       ),
                                       SizedBox(
-                                        width: 10,
+                                        width: 20,
                                       ),
                                       SizedBox(
                                         width: 200,
@@ -273,14 +275,32 @@ class _AppState extends State<App> {
                           width: 300,
                           height: 50,
                           child: Container(
+                            padding: EdgeInsets.symmetric(
+                              vertical: 0,
+                              horizontal: 40
+                            ),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(10),
                                 color: Colors.white
                               ),
-                            child: Center(
-                              child: Text(convertMillToMinAndSec(info.costTime)
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Icon(
+                                  info.type == IntervalType.run ?
+                                      Icons.directions_run
+                                  :
+                                      info.type == IntervalType.rest ?
+                                        Icons.directions_walk
+                                          :
+                                        Icons.self_improvement
+                                ,size: 50,
+                                ),
+                                Text(convertMillToMinAndSec(info.costTime)
                                 ,style: TextStyle(fontSize: 30)
-                                  ),
+                                ),
+
+                              ]
                             )
                               ),
                             ),
