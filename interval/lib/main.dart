@@ -5,8 +5,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:interval/entity/IntervalType.dart';
 import 'package:interval/entity/TimerInfo.dart';
 import 'dart:async';
+import 'package:get/get.dart';
 
 import 'package:interval/entity/TimerInfoDetail.dart';
+import 'package:interval/widget/IntervalDetailCard.dart';
 
 
 void main(){
@@ -30,14 +32,26 @@ class _AppState extends State<App> {
   int min = 0;
   int sec = 0;
 
+  // 글로벌 리스트 인덱스
+  int Listidx = 0;
+
+  // 인터벌 정보 카드 리스트 변수
+  List<IntervalDetailCard> intervalDetailCardList = [];
+
   IconData playIcon = Icons.play_circle;
   Stopwatch stopwatch = Stopwatch();
 
   // 밀리초 분,초 변환 setMainTimerInfo
-  void setMainTimerInfo(TimerInfo timerInfo){
+  void setMainTimerInfo(TimerInfo timerInfo, int? idx){
     var cvtSec = 0.0;
     if (runMilliSec == 0){
-      cvtSec = timerInfo.totalTime / 1000;
+      int costTime = 0;
+      if(idx != null){
+        costTime = timerInfo.timerList[idx].costTime;
+      }else{
+        costTime = timerInfo.totalTime;
+      }
+      cvtSec = costTime / 1000;
     }else{
       cvtSec = (runMilliSec / 1000).ceilToDouble();
     }
@@ -72,17 +86,45 @@ class _AppState extends State<App> {
     }
     setState(() {
       runTimer= Timer.periodic(duration, (Timer t) {
-        runMilliSec = timerInfo.totalTime - stopwatch.elapsedMilliseconds;
-        setMainTimerInfo(timerInfo);
-        // 시간 만료
+        runMilliSec = timerInfo.timerList[Listidx].costTime - stopwatch.elapsedMilliseconds;
+        setMainTimerInfo(timerInfo, Listidx);
+
+        // 다음 운동 시작
         if(runMilliSec <= 0){
+          stopwatch = Stopwatch();
+          stopwatch.start();
+          getIntervalDetailCard(timerInfo);
+          Listidx ++;
+        }
+        // 모든 운동 종료
+        if(runMilliSec <= 0 && Listidx == timerInfo.timerList.length){
           runTimer!.cancel();
           stopwatch = Stopwatch();
           runState = "finish";
+          Listidx = 0;
         }
       });
     });
   }
+
+  // 카드 정보 출력
+  List<Widget> getIntervalDetailCard(TimerInfo timerInfo){
+    intervalDetailCardList = [];
+    for (var index = 0; index < timerInfo.timerList.length; index++){
+      Color backgroundColor = Colors.white;
+      if(index == Listidx){
+        backgroundColor = Colors.redAccent;
+      }
+      IntervalDetailCard card = IntervalDetailCard(
+          info: timerInfo.timerList[index],
+          convertMillToMinAndSec: convertMillToMinAndSec,
+          backgroundColor: backgroundColor,
+      );
+      intervalDetailCardList.add(card);
+    }
+    return intervalDetailCardList;
+  }
+
 
   // 리셋 버튼
   void resetTimer(TimerInfo timerInfo){
@@ -93,7 +135,7 @@ class _AppState extends State<App> {
       playIcon = Icons.play_circle;
       stopwatch = Stopwatch();
       runMilliSec = 0;
-      setMainTimerInfo(timerInfo);
+      setMainTimerInfo(timerInfo, null);
       runState = "init";
     });
   }
@@ -140,7 +182,7 @@ class _AppState extends State<App> {
     );
     timerInfo.calcTotalTime(); // 총 시간 계산
 
-    setMainTimerInfo(timerInfo);// 시작시 초기 시간 세팅
+    setMainTimerInfo(timerInfo, null);// 시작시 초기 시간 세팅
 
     return MaterialApp(
       theme: ThemeData(
@@ -269,46 +311,8 @@ class _AppState extends State<App> {
                             ),
                       Container(
                       child: Column(
-                      children: [
-                      for (TimerInfoDetail info in timerInfo.timerList) ...[
-                        SizedBox(
-                          width: 300,
-                          height: 50,
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                              vertical: 0,
-                              horizontal: 40
-                            ),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                color: Colors.white
-                              ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Icon(
-                                  info.type == IntervalType.run ?
-                                      Icons.directions_run
-                                  :
-                                      info.type == IntervalType.rest ?
-                                        Icons.directions_walk
-                                          :
-                                        Icons.self_improvement
-                                ,size: 50,
-                                ),
-                                Text(convertMillToMinAndSec(info.costTime)
-                                ,style: TextStyle(fontSize: 30)
-                                ),
-
-                              ]
-                            )
-                              ),
-                            ),
-                            SizedBox(
-                              height: 30,
-                            )
-                          ],
-                        ]),
+                      children: getIntervalDetailCard(timerInfo),
+                      ),
                     ),
                   ])
                 ),
@@ -324,3 +328,6 @@ class _AppState extends State<App> {
     );
   }
 }
+
+
+
