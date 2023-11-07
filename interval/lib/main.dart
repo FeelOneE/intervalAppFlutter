@@ -1,4 +1,5 @@
 import 'dart:ffi';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -24,6 +25,9 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> {
 
+  // 최초 실행 여부
+  bool isFirstRun = true;
+
   // 초기 타이머 세팅
   int initMilliSec = 0;
   int runMilliSec = 0;
@@ -35,6 +39,8 @@ class _AppState extends State<App> {
   // 글로벌 리스트 인덱스
   int Listidx = 0;
 
+  int delayMilliSec = -900;
+
   // 인터벌 정보 카드 리스트 변수
   List<IntervalDetailCard> intervalDetailCardList = [];
 
@@ -42,17 +48,16 @@ class _AppState extends State<App> {
   Stopwatch stopwatch = Stopwatch();
 
   // 밀리초 분,초 변환 setMainTimerInfo
-  void setMainTimerInfo(TimerInfo timerInfo, int? idx){
+  void setMainTimerInfo(TimerInfo timerInfo, int? idx) {
     var cvtSec = 0.0;
-    if (runMilliSec == 0){
-      int costTime = 0;
-      if(idx != null){
-        costTime = timerInfo.timerList[idx].costTime;
-      }else{
-        costTime = timerInfo.totalTime;
-      }
+    int costTime = 0;
+    if (runMilliSec <= delayMilliSec && idx != null) { // 타이머가 0 이하가 되었을 때
+      costTime = timerInfo.timerList[idx].costTime;
       cvtSec = costTime / 1000;
-    }else{
+    }else if(runMilliSec == 0 && idx == null){ // 초기화 버튼을 눌렀을 때
+      costTime = timerInfo.totalTime;
+      cvtSec = costTime / 1000;
+    }else{ // 타이머가 움직일 때, 모든 운동이 종료되었을 때
       cvtSec = (runMilliSec / 1000).ceilToDouble();
     }
     setState(() {
@@ -71,7 +76,7 @@ class _AppState extends State<App> {
   }
   
   // 타이머 시작
-  Duration duration = const Duration(seconds: 1);
+  Duration duration = const Duration(milliseconds: 100);
   Timer? runTimer;
   String runState = "init"; // 타이머 실행 상태
 
@@ -90,11 +95,13 @@ class _AppState extends State<App> {
         setMainTimerInfo(timerInfo, Listidx);
 
         // 다음 운동 시작
-        if(runMilliSec <= 0){
+        if(runMilliSec < delayMilliSec){
           stopwatch = Stopwatch();
+          sleep(const Duration(milliseconds: 300)); // 1 초 대기
           stopwatch.start();
           getIntervalDetailCard(timerInfo);
           Listidx ++;
+
         }
         // 모든 운동 종료
         if(runMilliSec <= 0 && Listidx == timerInfo.timerList.length){
@@ -102,6 +109,7 @@ class _AppState extends State<App> {
           stopwatch = Stopwatch();
           runState = "finish";
           Listidx = 0;
+          setMainTimerInfo(timerInfo, null); // 타이머 초기화
         }
       });
     });
@@ -182,7 +190,10 @@ class _AppState extends State<App> {
     );
     timerInfo.calcTotalTime(); // 총 시간 계산
 
-    setMainTimerInfo(timerInfo, null);// 시작시 초기 시간 세팅
+    if(isFirstRun){ // App 최초 실행 시 한번만
+      setMainTimerInfo(timerInfo, null);// 시작시 초기 시간 세팅
+      isFirstRun = false;
+    }
 
     return MaterialApp(
       theme: ThemeData(
