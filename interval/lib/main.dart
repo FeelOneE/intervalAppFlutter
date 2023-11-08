@@ -7,9 +7,12 @@ import 'package:interval/entity/IntervalType.dart';
 import 'package:interval/entity/TimerInfo.dart';
 import 'dart:async';
 import 'package:get/get.dart';
+import 'dart:convert';
 
 import 'package:interval/entity/TimerInfoDetail.dart';
 import 'package:interval/widget/IntervalDetailCard.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 
 void main(){
@@ -147,12 +150,27 @@ class _AppState extends State<App> {
       runState = "init";
     });
   }
-  
+
+  String _storedData = "";
+  String _currentData = "";
+
+  _loadData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _storedData = prefs.getString('data') ?? "";
+    });
+  }
+
+  _saveData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('data', _currentData);
+    _loadData();
+  }
   
   @override
   Widget build(BuildContext context) {
 
-    List<TimerInfoDetail> timerInfoDetailList = [];
+   /* List<TimerInfoDetail> timerInfoDetailList = [];
     TimerInfoDetail info1 = TimerInfoDetail(
         costTime: 5*1000,
         type: IntervalType.prepare
@@ -193,8 +211,24 @@ class _AppState extends State<App> {
     if(isFirstRun){ // App 최초 실행 시 한번만
       setMainTimerInfo(timerInfo, null);// 시작시 초기 시간 세팅
       isFirstRun = false;
-    }
+      _currentData = jsonEncode(timerInfo.toJson());
+      print(_currentData);
+      _saveData();
+    }*/
 
+    _loadData();
+    print(_storedData);
+    List<TimerInfoDetail> test = [];
+    TimerInfoDetail info6 = TimerInfoDetail(
+        costTime: 6*1000,
+        type: IntervalType.rest
+    );
+    test.add(info6);
+    TimerInfo timerInfo = TimerInfo(
+        isDefault: true,
+        timerList: test,
+        totalTime: 0 // 총 시간 초기화
+    );
     return MaterialApp(
       theme: ThemeData(
         useMaterial3: true,

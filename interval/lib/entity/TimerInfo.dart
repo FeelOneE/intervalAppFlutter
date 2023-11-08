@@ -15,4 +15,12 @@ class TimerInfo{
       }
     }
   }
+
+  Map<String, dynamic> toJson(){
+    List<Map<String, dynamic>> timerListJson = [];
+    for(TimerInfoDetail info in timerList){
+      timerListJson.add(info.toJson());
+    }
+    return {'totalTime': totalTime, 'isDefault': isDefault, 'timerList':timerListJson};
+  }
 }

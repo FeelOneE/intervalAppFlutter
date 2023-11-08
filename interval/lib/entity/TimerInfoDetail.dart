@@ -5,4 +5,8 @@ class TimerInfoDetail{
   IntervalType type; // 운동 상태
 
   TimerInfoDetail({ required this.costTime, required this.type});
+
+  Map<String, dynamic> toJson(){
+    return {'costTime': costTime, 'type': type.name};
+  }
 }
